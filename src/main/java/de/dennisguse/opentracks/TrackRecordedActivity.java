@@ -207,7 +207,7 @@ public class TrackRecordedActivity extends AbstractTrackDeleteActivity implement
                 Intent newIntent = IntentUtils.newIntent(TrackRecordedActivity.this, TrackRecordingActivity.class)
                         .putExtra(TrackRecordingActivity.EXTRA_TRACK_ID, trackId);
                 startActivity(newIntent);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+               overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
 
                 finish();
             });

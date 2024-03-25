@@ -246,26 +246,7 @@ public class TrackStatistics {
     }
 
     public void addMovingTime(TrackPoint trackPoint, TrackPoint lastTrackPoint) {
-        if (pause) {
-            return;
-        }
-        if (resumed) {
-            // Calculate the elapsed time since the pause
-            Duration elapsedTimeSincePause = Duration.between(lastTrackPoint.getTime(), trackPoint.getTime());
-
-            // Update the moving time with the elapsed pause time
-            movingTime = movingTime.plus(elapsedTimeSincePause);
-
-            // Reset the resumed flag
-            resumed = false;
-        } else {
-            // Standard moving time update logic (add the time between track points)
-            Duration time = Duration.between(lastTrackPoint.getTime(), trackPoint.getTime());
-            if (time.isNegative()) {
-                throw new RuntimeException("Moving time cannot be negative");
-            }
-            movingTime = movingTime.plus(time);
-        }
+        addMovingTime(Duration.between(lastTrackPoint.getTime(), trackPoint.getTime()));
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
@@ -302,7 +283,7 @@ public class TrackStatistics {
      * This calculation only takes into account the displacement until the last point that was accounted for in statistics.
      */
     public Speed getAverageSpeed() {
-        if (totalTime.isZero()) {
+        if (totalTime.isZero() || totalTime == null) {
             return Speed.of(0);
         }
         return Speed.of(totalDistance.toM() / totalTime.getSeconds());

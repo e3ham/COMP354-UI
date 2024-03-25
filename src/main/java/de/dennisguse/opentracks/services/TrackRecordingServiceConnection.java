@@ -24,13 +24,18 @@ import android.os.IBinder;
 import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
 import android.util.Log;
+
+import de.dennisguse.opentracks.TrackStoppedActivity;
+import de.dennisguse.opentracks.data.models.Track;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import de.dennisguse.opentracks.BuildConfig;
+import de.dennisguse.opentracks.chart.ChartFragment;
 import de.dennisguse.opentracks.stats.TrackStatistics;
+
 
 /**
  * Wrapper for the track recording service.
@@ -42,9 +47,14 @@ import de.dennisguse.opentracks.stats.TrackStatistics;
  */
 public class TrackRecordingServiceConnection {
 
+
     private static final String TAG = TrackRecordingServiceConnection.class.getSimpleName();
 
+    TrackStoppedActivity tsa;
+
     private final Callback callback;
+    public Track.Id trackId;
+    public static final String EXTRA_TRACK_ID = "track_id";
 
     private TrackRecordingService trackRecordingService;
 
@@ -138,6 +148,7 @@ public class TrackRecordingServiceConnection {
     }
 
     public void pauseRecording(@NonNull Context context) {
+//        trackId = context.getParcelableExtra(EXTRA_TRACK_ID);
         if (trackRecordingService == null) {
             Log.e(TAG, "TrackRecordingService not connected.");
         } else {
@@ -146,10 +157,11 @@ public class TrackRecordingServiceConnection {
     }
 
     public void resumeRecording(@NonNull Context context) {
+        trackId = tsa.getIntent().getParcelableExtra(EXTRA_TRACK_ID);
         if (trackRecordingService == null) {
             Log.e(TAG, "TrackRecordingService not connected.");
         } else {
-            trackRecordingService.resumeRecording();
+            trackRecordingService.resumeTrack(trackId);
         }
     }
 

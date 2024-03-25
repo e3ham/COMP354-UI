@@ -104,7 +104,7 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
         }
         if (key == null) return;
 
-//        runOnUiThread(TrackRecordingActivity.this::invalidateOptionsMenu); //TODO Should not be necessary
+        runOnUiThread(TrackRecordingActivity.this::invalidateOptionsMenu); //TODO Should not be necessary
     };
 
     @Override
@@ -147,14 +147,14 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
 
         viewBinding.trackRecordingPause.setImageResource(R.drawable.ic_baseline_record_pause);
         viewBinding.trackRecordingPause.setOnClickListener((view) -> {
-            ActivityUtils.vibrate(this, 200);
+            ActivityUtils.vibrate(this, 50);
             trackRecordingServiceConnection.pauseRecording(TrackRecordingActivity.this);
             view.setVisibility(View.GONE);
         });
 
         viewBinding.trackRecordingResume.setImageResource(R.drawable.ic_button_resume);
         viewBinding.trackRecordingResume.setOnClickListener((view) -> {
-            ActivityUtils.vibrate(this, 200);
+            ActivityUtils.vibrate(this, 50);
             trackRecordingServiceConnection.resumeRecording(TrackRecordingActivity.this);
             viewBinding.trackRecordingPause.setVisibility(View.VISIBLE);
         });

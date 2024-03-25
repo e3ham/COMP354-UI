@@ -7,9 +7,12 @@ import android.widget.Toast;
 
 import java.security.AccessControlContext;
 import java.time.Duration;
+import java.time.Instant;
 
 import de.dennisguse.opentracks.R;
 import de.dennisguse.opentracks.TrackRecordingActivity;
+import de.dennisguse.opentracks.chart.ChartFragment;
+import de.dennisguse.opentracks.data.TrackDataHub;
 import de.dennisguse.opentracks.data.models.DistanceFormatter;
 import de.dennisguse.opentracks.data.models.Speed;
 import de.dennisguse.opentracks.data.models.SpeedFormatter;
@@ -65,8 +68,23 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
 
     public static class TotalTime extends GenericStatisticsViewHolder {
 
+        private static boolean paused = false;
+        private static boolean resume = false;
+
+        public static void pause() {
+            paused = true;
+        }
+
+        public static void resume() {
+            paused = false;
+            resume = true;
+        }
+
         @Override
         public void onChanged(UnitSystem unitSystem, RecordingData data) {
+            if (paused) {
+                return; // Don't update UI if paused
+            }
             Pair<String, String> valueAndUnit = new Pair<>(StringUtils.formatElapsedTime(data.getTrackStatistics().getTotalTime()), null);
 
             getBinding().statsValue.setText(valueAndUnit.first);
@@ -86,7 +104,6 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
 
         public static void pause() {
             paused = true;
-            TrackStatistics.pause = true;
         }
         public static void resume() {
             paused = false;
@@ -96,10 +113,6 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
         @Override
         public void onChanged(UnitSystem unitSystem, RecordingData data) {
             if (paused) {
-                if (fix) {
-                    currentTime = data.getTrackStatistics().getMovingTime();
-                }
-                fix = false;
                 return; // Don't update UI if paused
             }
             if (resume) {
