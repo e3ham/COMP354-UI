@@ -199,6 +199,18 @@ public class TrackRecordingService extends Service implements TrackPointCreator.
 
     public void pauseRecording() {
         trackRecordingManager.pauseCurrentTrack();
+        // Set recording status
+//        updateRecordingStatus(STATUS_DEFAULT);
+        stopUpdateRecordingData();
+
+//        GenericStatisticsViewHolder.TotalTime.pause();
+//        GenericStatisticsViewHolder.MovingTime.pause();
+//        GenericStatisticsViewHolder.Distance.pause();
+//        GenericStatisticsViewHolder.SpeedOrPace.pause();
+    }
+
+    public void resumeRecording() {
+
     }
 
 
