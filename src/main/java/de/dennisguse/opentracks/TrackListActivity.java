@@ -213,7 +213,7 @@ public class TrackListActivity extends AbstractTrackDeleteActivity implements Co
             // Recording -> Pause
             ActivityUtils.vibrate(this, 1000);
             updateGpsMenuItem(true, false);
-            recordingBinding.trackRecordingPause.setImageResource(R.drawable.ic_baseline_record_pause);
+            recordingBinding.trackRecordingPause.setImageResource(R.drawable.ic_button_pause);
             return true;
         });
 
