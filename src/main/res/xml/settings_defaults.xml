@@ -19,6 +19,13 @@
             android:key="@string/stats_rate_key"
             android:title="@string/settings_stats_rate_title"
             app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            android:defaultValue="@string/stats_time_default"
+            android:entries="@array/stats_time_units_options"
+            android:entryValues="@array/stats_time_values"
+            android:key="@string/stats_time_units_key"
+            android:title="@string/settings_stats_time_unit"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_activity_defaults_category">
