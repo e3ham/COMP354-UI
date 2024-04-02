@@ -232,6 +232,20 @@ public class TrackListActivity extends AbstractTrackDeleteActivity implements Co
             return true;
         });
 
+        recordingBinding.trackRecordingPause.setOnLongClickListener((view) -> {
+            if (recordingStatus.isRecording()) {
+                return false;
+            }
+
+            // Pause -> Recording
+            ActivityUtils.vibrate(this, 1000);
+            updateGpsMenuItem(true, true);
+            TrackRecordingServiceConnection.execute(this, (service, connection) -> {
+                service.resumeTrack(getRecordingTrackId());
+            });
+            return true;
+        });
+
         setSupportActionBar(viewBinding.trackListToolbar);
         adapter.setActionModeCallback(contextualActionModeCallback);
     }
