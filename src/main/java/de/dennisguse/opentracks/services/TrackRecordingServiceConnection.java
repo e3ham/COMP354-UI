@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import de.dennisguse.opentracks.BuildConfig;
+import de.dennisguse.opentracks.data.models.Track;
 import de.dennisguse.opentracks.stats.TrackStatistics;
 
 /**
@@ -145,11 +146,11 @@ public class TrackRecordingServiceConnection {
         }
     }
 
-    public void resumeRecording(@NonNull Context context) {
+    public void resumeRecording(Track.Id trackId) {
         if (trackRecordingService == null) {
             Log.e(TAG, "TrackRecordingService not connected.");
         } else {
-            trackRecordingService.resumeRecording();
+            trackRecordingService.resumeTrack(trackId);
         }
     }
 

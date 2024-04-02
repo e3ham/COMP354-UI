@@ -38,7 +38,11 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
 
 import de.dennisguse.opentracks.TrackListActivity;
 import de.dennisguse.opentracks.data.models.Distance;
@@ -50,6 +54,7 @@ import de.dennisguse.opentracks.services.announcement.VoiceAnnouncementManager;
 import de.dennisguse.opentracks.services.handlers.GpsStatusValue;
 import de.dennisguse.opentracks.services.handlers.TrackPointCreator;
 import de.dennisguse.opentracks.settings.PreferencesUtils;
+import de.dennisguse.opentracks.stats.TrackStatistics;
 import de.dennisguse.opentracks.util.PermissionRequester;
 import de.dennisguse.opentracks.util.SystemUtils;
 import de.dennisguse.opentracks.viewmodels.GenericStatisticsViewHolder;
@@ -193,18 +198,7 @@ public class TrackRecordingService extends Service implements TrackPointCreator.
     }
 
     public void pauseRecording() {
-        // Set recording status
-//        updateRecordingStatus(STATUS_DEFAULT);
-        stopUpdateRecordingData();
-
-//        GenericStatisticsViewHolder.TotalTime.pause();
-//        GenericStatisticsViewHolder.MovingTime.pause();
-//        GenericStatisticsViewHolder.Distance.pause();
-//        GenericStatisticsViewHolder.SpeedOrPace.pause();
-    }
-
-    public void resumeRecording() {
-
+        trackRecordingManager.pauseCurrentTrack();
     }
 
 

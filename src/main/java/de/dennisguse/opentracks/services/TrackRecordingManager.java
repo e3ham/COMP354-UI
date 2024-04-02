@@ -109,6 +109,17 @@ public class TrackRecordingManager implements SharedPreferences.OnSharedPreferen
         return true;
     }
 
+    void pauseCurrentTrack() {
+        if (trackId == null) {
+            Log.w(TAG, "No trackId to pause.");
+            return;
+        }
+
+        TrackPoint segmentEnd = trackPointCreator.createSegmentEnd();
+        insertTrackPoint(segmentEnd, true);
+        handler.removeCallbacks(ON_IDLE);
+    }
+
     void endCurrentTrack() {
         TrackPoint segmentEnd = trackPointCreator.createSegmentEnd();
         insertTrackPoint(segmentEnd, true);
