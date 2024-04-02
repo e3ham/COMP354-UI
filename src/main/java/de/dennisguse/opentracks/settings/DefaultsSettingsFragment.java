@@ -2,8 +2,11 @@ package de.dennisguse.opentracks.settings;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager; //Added for EdittextPreference
+
 
 import androidx.fragment.app.DialogFragment;
+import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -70,15 +73,35 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         //Acquire time units from Preferences
         TimeUnitSystem time = PreferencesUtils.getTimeUnit();
         ListPreference statsTimePreferences = findPreference((getString(R.string.stats_time_units_key)));
+        EditTextPreference statsTimeCustom = findPreference(getString(R.string.stats_time_units_custom_key));
 
+        //See which option is chosen
         int entriesID = switch (time) {
-            case FIVE_SEC, TEN_SEC, FIFTEEN_SEC, CUSTOM -> R.array.stats_time_units_options;
+            case FIVE_SEC, TEN_SEC, FIFTEEN_SEC -> R.array.stats_time_units_options;
+            case CUSTOM ->
+                R.array.stats_time_values;
+
         };
 
         String[] entries = getResources().getStringArray(entriesID);
         statsTimePreferences.setEntries(entries);
 
+         // Set summary for custom time preference
+         statsTimeCustom.setSummary(statsTimeCustom.getText());
+
+        //Validates whether the time unit saving method will work
         HackUtils.invalidatePreference(statsTimePreferences);
+        HackUtils.invalidatePreference((statsTimeCustom))
+        ;
+    }
+
+    //TODO implement a method where the Settings retrieve the custom time value made by the user
+    private String getCustomTimeValue() {
+        // Get the shared preferences instance
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+
+        //return custom time value input
+        return sharedPreferences.getString(getString(R.string.stats_time_units_custom_key),"");
     }
 
     private void updateUnits() {
