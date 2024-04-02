@@ -219,6 +219,19 @@ public class PreferencesUtils {
                 .orElse(UnitSystem.defaultUnitSystem()); //TODO This AGAIN defines the default
     }
 
+    //TODO Get time wanted
+    public static TimeUnitSystem getTimeUnit() {
+        final String STATS_TIME_UNIT_DEFAULT = resources.getString(R.string.stats_time_default);
+
+        final String VALUE = getString(R.string.stats_time_units_key, STATS_TIME_UNIT_DEFAULT);
+        return Arrays.stream(TimeUnitSystem.values())
+                .filter(d -> VALUE.equals(resources.getString(d.getPreferenceId(), STATS_TIME_UNIT_DEFAULT)))
+                .findFirst()
+                .orElse(TimeUnitSystem.defaultUnitSystem()); //TODO This AGAIN defines the default
+    }
+
+
+
     public static void setUnit(UnitSystem unitSystem) {
         setString(R.string.stats_units_key, unitSystem.getPreferenceId());
     }

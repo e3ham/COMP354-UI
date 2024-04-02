@@ -38,6 +38,7 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
     public void onResume() {
         super.onResume();
         PreferencesUtils.registerOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
+        updateTimeUnits(); //Make sure that time is kept
         updateUnits();
     }
 
@@ -62,6 +63,22 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         }
 
         super.onDisplayPreferenceDialog(preference);
+    }
+
+    //Modify the default time units for activities
+    private void updateTimeUnits() {
+        //Acquire time units from Preferences
+        TimeUnitSystem time = PreferencesUtils.getTimeUnit();
+        ListPreference statsTimePreferences = findPreference((getString(R.string.stats_time_units_key)));
+
+        int entriesID = switch (time) {
+            case FIVE_SEC, TEN_SEC, FIFTEEN_SEC, CUSTOM -> R.array.stats_time_units_options;
+        };
+
+        String[] entries = getResources().getStringArray(entriesID);
+        statsTimePreferences.setEntries(entries);
+
+        HackUtils.invalidatePreference(statsTimePreferences);
     }
 
     private void updateUnits() {
