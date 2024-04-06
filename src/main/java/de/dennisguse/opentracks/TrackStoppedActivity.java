@@ -7,6 +7,8 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.ArrayAdapter;
 
+import androidx.preference.ListPreference;
+
 import de.dennisguse.opentracks.data.ContentProviderUtils;
 import de.dennisguse.opentracks.data.models.ActivityType;
 import de.dennisguse.opentracks.data.models.DistanceFormatter;
@@ -16,6 +18,8 @@ import de.dennisguse.opentracks.databinding.TrackStoppedBinding;
 import de.dennisguse.opentracks.fragments.ChooseActivityTypeDialogFragment;
 import de.dennisguse.opentracks.services.TrackRecordingServiceConnection;
 import de.dennisguse.opentracks.settings.PreferencesUtils;
+import de.dennisguse.opentracks.settings.TimeUnitSystem;
+import de.dennisguse.opentracks.stats.TrackStatistics;
 import de.dennisguse.opentracks.ui.aggregatedStatistics.ConfirmDeleteDialogFragment;
 import de.dennisguse.opentracks.util.ExportUtils;
 import de.dennisguse.opentracks.util.IntentUtils;
@@ -33,6 +37,8 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
     private Track.Id trackId;
 
     private boolean isDiscarding = false;
+
+    public ListPreference statsTimePreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +97,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         }
 
         viewBinding.finishButton.setOnClickListener(v -> {
+//            if(track.getTrackStatistics().getTotalTime() < statsTime)
             storeTrackMetaData(contentProviderUtils, track);
             ExportUtils.postWorkoutExport(this, trackId);
             finish();

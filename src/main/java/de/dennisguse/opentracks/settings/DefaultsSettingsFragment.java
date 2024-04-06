@@ -72,7 +72,7 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         ListPreference statsTimePreferences = findPreference((getString(R.string.stats_time_units_key)));
 
         int entriesID = switch (time) {
-            case FIVE_SEC, TEN_SEC, FIFTEEN_SEC, CUSTOM -> R.array.stats_time_units_options;
+            case FIVE_SEC, TEN_SEC, TWENTY_SEC, CUSTOM -> R.array.stats_time_units_options;
         };
 
         String[] entries = getResources().getStringArray(entriesID);
