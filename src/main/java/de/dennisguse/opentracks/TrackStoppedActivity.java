@@ -9,6 +9,8 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.ArrayAdapter;
 
+import androidx.preference.ListPreference;
+
 import java.time.Duration;
 
 import de.dennisguse.opentracks.data.ContentProviderUtils;
@@ -37,6 +39,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
     private Track.Id trackId;
 
     private boolean isDiscarding = false;
+    public ListPreference statsTimePreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +106,16 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
                 viewBinding.distanceUnit.setText(parts.second);
             }
 
+            String time_setting = getString(R.string.stats_time_units_key);
+            String[] parts = time_setting.split("\\s+");
+            String firstPart = parts[0];
+            int time_key = Integer.parseInt(firstPart);
+
             viewBinding.finishButton.setOnClickListener(v -> {
+                long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
+                if(totalTimeSeconds < time_key) {
+                    // TODO implement logic to discard
+                }
                 storeTrackMetaData(contentProviderUtils, track);
                 ExportUtils.postWorkoutExport(this, trackId);
                 finish();
