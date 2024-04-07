@@ -17,6 +17,7 @@ import de.dennisguse.opentracks.data.models.SpeedFormatter;
 import de.dennisguse.opentracks.data.models.Track;
 import de.dennisguse.opentracks.databinding.TrackStoppedBinding;
 import de.dennisguse.opentracks.fragments.ChooseActivityTypeDialogFragment;
+import de.dennisguse.opentracks.services.TrackDeleteService;
 import de.dennisguse.opentracks.services.TrackRecordingServiceConnection;
 import de.dennisguse.opentracks.settings.PreferencesUtils;
 import de.dennisguse.opentracks.settings.TimeUnitSystem;
@@ -104,7 +105,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
             int time_key = convertInt(parts[0]);
             long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
             if(totalTimeSeconds < time_key) {
-                // TODO implement delete track
+                onConfirmDeleteDone(trackId);
             }
             storeTrackMetaData(contentProviderUtils, track);
             ExportUtils.postWorkoutExport(this, trackId);
