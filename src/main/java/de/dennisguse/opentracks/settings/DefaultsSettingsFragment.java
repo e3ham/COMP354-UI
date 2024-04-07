@@ -17,6 +17,7 @@ import android.widget.EditText;
 
 import androidx.preference.PreferenceDialogFragmentCompat;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 
 import de.dennisguse.opentracks.R;
 import de.dennisguse.opentracks.data.models.ActivityType;
@@ -38,7 +39,7 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
     };
 
 
-    private String custom_time; //use for CUSTOM
+    private String custom_time;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -46,13 +47,16 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
 
         ListPreference statsTimeUnitsPreference = findPreference(getString(R.string.stats_time_units_key));
 
+        custom_time = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString("custom_time_unit", null);
+
         // Set up the listener
         statsTimeUnitsPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
                 if (newValue.equals("CUSTOM")) {
                     displayCustomInputDialog();
-                    // Preventthe default behavior of the ListPreference
+                    // Prevent the default behavior of the ListPreference
                     return false;
                 } else {
                     //Allow the ListPreference to handle the change
@@ -164,11 +168,22 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
 
         //Buttons cancel or just say ok
         builder.setPositiveButton("OK", (dialog, which) -> {
+            // Store the custom value
             custom_time = cus_Input.getText().toString();
+            saveCustomTimeUnit(custom_time); // Call the method to persist the value
         });
+
+        if (custom_time != null) {
+            cus_Input.setText(custom_time);
+        }
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
         //show final result
         builder.show();
+    }
+
+    private void saveCustomTimeUnit(String value) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        sharedPref.edit().putString("custom_time_unit", value).apply();
     }
 }
