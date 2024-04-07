@@ -22,6 +22,9 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         if (PreferencesUtils.isKey(R.string.stats_units_key, key)) {
             getActivity().runOnUiThread(this::updateUnits);
         }
+        if (PreferencesUtils.isKey(R.string.stats_time_units_key, key)) {
+            getActivity().runOnUiThread(this::updateTimeUnits);
+        }
     };
 
     @Override

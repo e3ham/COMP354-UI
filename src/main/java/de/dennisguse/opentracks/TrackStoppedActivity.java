@@ -1,17 +1,14 @@
 package de.dennisguse.opentracks;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.preference.ListPreference;
-
-import java.time.Duration;
 
 import de.dennisguse.opentracks.data.ContentProviderUtils;
 import de.dennisguse.opentracks.data.models.ActivityType;
@@ -22,6 +19,8 @@ import de.dennisguse.opentracks.databinding.TrackStoppedBinding;
 import de.dennisguse.opentracks.fragments.ChooseActivityTypeDialogFragment;
 import de.dennisguse.opentracks.services.TrackRecordingServiceConnection;
 import de.dennisguse.opentracks.settings.PreferencesUtils;
+import de.dennisguse.opentracks.settings.TimeUnitSystem;
+import de.dennisguse.opentracks.stats.TrackStatistics;
 import de.dennisguse.opentracks.ui.aggregatedStatistics.ConfirmDeleteDialogFragment;
 import de.dennisguse.opentracks.util.ExportUtils;
 import de.dennisguse.opentracks.util.IntentUtils;
@@ -39,6 +38,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
     private Track.Id trackId;
 
     private boolean isDiscarding = false;
+
     public ListPreference statsTimePreferences;
 
     @Override
@@ -54,100 +54,87 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         ContentProviderUtils contentProviderUtils = new ContentProviderUtils(this);
         Track track = contentProviderUtils.getTrack(trackId);
 
-        SharedPreferences preferences = this.getSharedPreferences("default_time_unit", Context.MODE_PRIVATE);
-        int selectedTimeUnitId = preferences.getInt(getString(R.string.stats_time_units_key), R.string.stats_time_default);
-        int minTimeMillis = convertTimeUnitToMillis(selectedTimeUnitId);
+        viewBinding.trackEditName.setText(track.getName());
 
-        Duration movingTime = track.getTrackStatistics().getMovingTime();
-        long movingTimeMillis = movingTime.toMillis();
+        viewBinding.trackEditActivityType.setText(track.getActivityTypeLocalized());
 
-        if (movingTimeMillis < minTimeMillis) {
-            ConfirmDeleteDialogFragment.showDialog(getSupportFragmentManager(), trackId);
-        } else {
-            viewBinding.trackEditName.setText(track.getName());
-            viewBinding.trackEditActivityType.setText(track.getActivityTypeLocalized());
-
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, ActivityType.getLocalizedStrings(this));
-            viewBinding.trackEditActivityType.setAdapter(adapter);
-            viewBinding.trackEditActivityType.setOnItemClickListener((parent, view, position, id) -> {
-                String localizedActivityType = (String) viewBinding.trackEditActivityType.getAdapter().getItem(position);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, ActivityType.getLocalizedStrings(this));
+        viewBinding.trackEditActivityType.setAdapter(adapter);
+        viewBinding.trackEditActivityType.setOnItemClickListener((parent, view, position, id) -> {
+            String localizedActivityType = (String) viewBinding.trackEditActivityType.getAdapter().getItem(position);
+            setActivityTypeIcon(ActivityType.findByLocalizedString(this, localizedActivityType));
+        });
+        viewBinding.trackEditActivityType.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String localizedActivityType = viewBinding.trackEditActivityType.getText().toString();
                 setActivityTypeIcon(ActivityType.findByLocalizedString(this, localizedActivityType));
-            });
-            viewBinding.trackEditActivityType.setOnFocusChangeListener((v, hasFocus) -> {
-                if (!hasFocus) {
-                    String localizedActivityType = viewBinding.trackEditActivityType.getText().toString();
-                    setActivityTypeIcon(ActivityType.findByLocalizedString(this, localizedActivityType));
-                }
-            });
-
-            setActivityTypeIcon(track.getActivityType());
-            viewBinding.trackEditActivityTypeIcon.setOnClickListener(v -> ChooseActivityTypeDialogFragment.showDialog(getSupportFragmentManager(), this, viewBinding.trackEditActivityType.getText().toString()));
-
-            viewBinding.trackEditDescription.setText(track.getDescription());
-
-            viewBinding.time.setText(StringUtils.formatElapsedTime(track.getTrackStatistics().getMovingTime()));
-
-            {
-                Pair<String, String> parts = SpeedFormatter.Builder()
-                        .setUnit(PreferencesUtils.getUnitSystem())
-                        .setReportSpeedOrPace(PreferencesUtils.isReportSpeed(track))
-                        .build(this)
-                        .getSpeedParts(track.getTrackStatistics().getAverageMovingSpeed());
-                viewBinding.speed.setText(parts.first);
-                viewBinding.speedUnit.setText(parts.second);
             }
+        });
 
-            {
-                Pair<String, String> parts = DistanceFormatter.Builder()
-                        .setUnit(PreferencesUtils.getUnitSystem())
-                        .build(this)
-                        .getDistanceParts(track.getTrackStatistics().getTotalDistance());
-                viewBinding.distance.setText(parts.first);
-                viewBinding.distanceUnit.setText(parts.second);
-            }
+        setActivityTypeIcon(track.getActivityType());
+        viewBinding.trackEditActivityTypeIcon.setOnClickListener(v -> ChooseActivityTypeDialogFragment.showDialog(getSupportFragmentManager(), this, viewBinding.trackEditActivityType.getText().toString()));
 
+        viewBinding.trackEditDescription.setText(track.getDescription());
+
+        viewBinding.time.setText(StringUtils.formatElapsedTime(track.getTrackStatistics().getMovingTime()));
+
+        {
+            Pair<String, String> parts = SpeedFormatter.Builder()
+                    .setUnit(PreferencesUtils.getUnitSystem())
+                    .setReportSpeedOrPace(PreferencesUtils.isReportSpeed(track))
+                    .build(this)
+                    .getSpeedParts(track.getTrackStatistics().getAverageMovingSpeed());
+            viewBinding.speed.setText(parts.first);
+            viewBinding.speedUnit.setText(parts.second);
+        }
+
+        {
+            Pair<String, String> parts = DistanceFormatter.Builder()
+                    .setUnit(PreferencesUtils.getUnitSystem())
+                    .build(this)
+                    .getDistanceParts(track.getTrackStatistics().getTotalDistance());
+            viewBinding.distance.setText(parts.first);
+            viewBinding.distanceUnit.setText(parts.second);
+        }
+
+        viewBinding.finishButton.setOnClickListener(v -> {
             String time_setting = getString(R.string.stats_time_units_key);
-            String[] parts = time_setting.split("\\s+");
-            String firstPart = parts[0];
-            int time_key = Integer.parseInt(firstPart);
+            TimeUnitSystem timeUnitSystem = PreferencesUtils.getTimeUnit();
+            String[] parts = timeUnitSystem.toString().split("_");
+            int time_key = convertInt(parts[0]);
+            long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
+            if(totalTimeSeconds < time_key) {
+                // TODO implement delete track
+            }
+            storeTrackMetaData(contentProviderUtils, track);
+            ExportUtils.postWorkoutExport(this, trackId);
+            finish();
+        });
 
-            viewBinding.finishButton.setOnClickListener(v -> {
-                long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
-                if(totalTimeSeconds < time_key) {
-                    // TODO implement logic to discard
-                }
-                storeTrackMetaData(contentProviderUtils, track);
-                ExportUtils.postWorkoutExport(this, trackId);
-                finish();
-            });
+        viewBinding.resumeButton.setOnClickListener(v -> {
+            storeTrackMetaData(contentProviderUtils, track);
+            resumeTrackAndFinish();
+        });
 
-            viewBinding.resumeButton.setOnClickListener(v -> {
-                storeTrackMetaData(contentProviderUtils, track);
-                resumeTrackAndFinish();
-            });
-
-            viewBinding.discardButton.setOnClickListener(v -> ConfirmDeleteDialogFragment.showDialog(getSupportFragmentManager(), trackId));
-        }
-    }
-
-    private int convertTimeUnitToMillis(int selectedTimeUnitId) {
-        int minTimeMillis;
-        if (selectedTimeUnitId == R.string.stats_time_unit_five) {
-            minTimeMillis = 5 * 1000; // 5 seconds
-        } else if (selectedTimeUnitId == R.string.stats_time_unit_ten) {
-            minTimeMillis = 10 * 1000; // 10 seconds
-        } else if (selectedTimeUnitId == R.string.stats_time_unit_twenty) {
-            minTimeMillis = 15 * 1000; // 15 seconds
-        } else {
-            minTimeMillis = 0; // Default or custom case
-        }
-        return minTimeMillis;
+        viewBinding.discardButton.setOnClickListener(v -> ConfirmDeleteDialogFragment.showDialog(getSupportFragmentManager(), trackId));
     }
 
     private void storeTrackMetaData(ContentProviderUtils contentProviderUtils, Track track) {
         TrackUtils.updateTrack(TrackStoppedActivity.this, track, viewBinding.trackEditName.getText().toString(),
                 viewBinding.trackEditActivityType.getText().toString(), viewBinding.trackEditDescription.getText().toString(),
                 contentProviderUtils);
+    }
+
+    public int convertInt(String s) {
+        int val = 0;
+        if (s.equals("FIVE")) {
+            val = 5;
+        } else if (s.equals("TEN")) {
+            val = 10;
+        } else if (s.equals("TWENTY")) {
+            val = 20;
+        }
+        return val;
     }
 
     @Override
