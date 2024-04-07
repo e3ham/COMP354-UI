@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.fragment.app.DialogFragment;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
+import android.content.Context;
 import androidx.preference.PreferenceFragmentCompat;
 
 import de.dennisguse.opentracks.R;
@@ -69,6 +70,12 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
     private void updateTimeUnits() {
         //Acquire time units from Preferences
         TimeUnitSystem time = PreferencesUtils.getTimeUnit();
+        SharedPreferences preferences = getContext().getSharedPreferences("default_time_unit", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putInt(getString(R.string.stats_time_units_key), time.getPreferenceId());
+        editor.apply();
+
         ListPreference statsTimePreferences = findPreference((getString(R.string.stats_time_units_key)));
 
         int entriesID = switch (time) {

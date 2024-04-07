@@ -170,7 +170,7 @@
 
 <!--    Default Time Unit Option in Settings-->
     <string name="stats_time_units_key" translatable="false">timeUnits</string>
-    <string name="stats_time_default" translatable="false">@string/settings_stats_time_unit_five</string>
+    <string name="stats_time_default" translatable="false">@string/settings_stats_time_unit_ten</string>
     <string-array name="stats_time_values">
         <item>@string/stats_time_unit_five</item>
         <item>@string/stats_time_unit_ten</item>
