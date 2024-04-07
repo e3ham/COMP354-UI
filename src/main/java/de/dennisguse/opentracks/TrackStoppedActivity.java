@@ -124,7 +124,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
             minTimeMillis = 5 * 1000; // 5 seconds
         } else if (selectedTimeUnitId == R.string.stats_time_unit_ten) {
             minTimeMillis = 10 * 1000; // 10 seconds
-        } else if (selectedTimeUnitId == R.string.stats_time_unit_fifteen) {
+        } else if (selectedTimeUnitId == R.string.stats_time_unit_twenty) {
             minTimeMillis = 15 * 1000; // 15 seconds
         } else {
             minTimeMillis = 0; // Default or custom case
