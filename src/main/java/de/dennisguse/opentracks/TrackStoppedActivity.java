@@ -19,6 +19,7 @@ import de.dennisguse.opentracks.databinding.TrackStoppedBinding;
 import de.dennisguse.opentracks.fragments.ChooseActivityTypeDialogFragment;
 import de.dennisguse.opentracks.services.TrackDeleteService;
 import de.dennisguse.opentracks.services.TrackRecordingServiceConnection;
+import de.dennisguse.opentracks.settings.DefaultsSettingsFragment;
 import de.dennisguse.opentracks.settings.PreferencesUtils;
 import de.dennisguse.opentracks.settings.TimeUnitSystem;
 import de.dennisguse.opentracks.stats.TrackStatistics;
@@ -41,6 +42,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
     private boolean isDiscarding = false;
 
     public ListPreference statsTimePreferences;
+    public DefaultsSettingsFragment dfs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,11 +103,21 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         viewBinding.finishButton.setOnClickListener(v -> {
             String time_setting = getString(R.string.stats_time_units_key);
             TimeUnitSystem timeUnitSystem = PreferencesUtils.getTimeUnit();
-            String[] parts = timeUnitSystem.toString().split("_");
-            int time_key = convertInt(parts[0]);
-            long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
-            if(totalTimeSeconds < time_key) {
-                onConfirmDeleteDone(trackId);
+            Log.i(timeUnitSystem.toString(), timeUnitSystem.toString());
+            if (time_setting.equals("CUSTOM")) {
+                Log.i(dfs.custom_time, dfs.custom_time);
+                int time_key = Integer.parseInt(dfs.custom_time);
+                long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
+                if(totalTimeSeconds < time_key) {
+                    onConfirmDeleteDone(trackId);
+                }
+            } else {
+                String[] parts = timeUnitSystem.toString().split("_");
+                int time_key = convertInt(parts[0]);
+                long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
+                if (totalTimeSeconds < time_key) {
+                    onConfirmDeleteDone(trackId);
+                }
             }
             storeTrackMetaData(contentProviderUtils, track);
             ExportUtils.postWorkoutExport(this, trackId);

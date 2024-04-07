@@ -39,7 +39,7 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
     };
 
 
-    private String custom_time;
+    public String custom_time;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -150,8 +150,6 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
             activityPreferenceDialog.updateUI(activityType);
         }
     }
-
-
 
 
     //Custom Dialog
