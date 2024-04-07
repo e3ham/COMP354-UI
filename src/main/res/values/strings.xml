@@ -561,7 +561,7 @@ limitations under the License.
     <string name="settings_stats_time_unit">Preferred minimum time</string>
     <string name="settings_stats_time_unit_five">5 seconds</string>
     <string name="settings_stats_time_unit_ten">10 seconds</string>
-    <string name="settings_stats_time_unit_fifteen">15 seconds</string>
+    <string name="settings_stats_time_unit_twenty">20 seconds</string>
     <string name="settings_stats_time_unit_custom">Customize</string>
 
     <!-- Settings public api -->

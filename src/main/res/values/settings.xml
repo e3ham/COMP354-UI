@@ -170,23 +170,22 @@
 
 <!--    Default Time Unit Option in Settings-->
     <string name="stats_time_units_key" translatable="false">timeUnits</string>
-    <string name="stats_time_units_custom_key" translatable="false">custom_timeUnits</string>
-    <string name="stats_time_default" translatable="false">@string/settings_stats_time_unit_five</string>
+    <string name="stats_time_default" translatable="false">@string/settings_stats_time_unit_ten</string>
     <string-array name="stats_time_values">
         <item>@string/stats_time_unit_five</item>
         <item>@string/stats_time_unit_ten</item>
-        <item>@string/stats_time_unit_fifteen</item>
+        <item>@string/stats_time_unit_twenty</item>
         <item>@string/stats_time_unit_custom</item>
     </string-array>
     <string name="stats_time_unit_five" translatable="false">FIVE_SEC</string>
     <string name="stats_time_unit_ten" translatable="false">TEN_SEC</string>
-    <string name="stats_time_unit_fifteen" translatable="false">FIFTEEN_SEC</string>
+    <string name="stats_time_unit_twenty" translatable="false">TWENTY_SEC</string>
     <string name="stats_time_unit_custom" translatable="false">CUSTOM</string>
     <string-array name="stats_time_units_options">
         <item>@string/settings_stats_time_unit_five</item>
         <item>@string/settings_stats_time_unit_ten</item>
-        <item>@string/settings_stats_time_unit_fifteen</item>
-<!--        <item>@string/settings_stats_time_unit_custom</item>-->
+        <item>@string/settings_stats_time_unit_twenty</item>
+        <item>@string/settings_stats_time_unit_custom</item>
     </string-array>
 
     <string name="stats_units_key" translatable="false">statsUnits</string>

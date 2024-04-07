@@ -1,11 +1,15 @@
 package de.dennisguse.opentracks;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.ArrayAdapter;
+
+import java.time.Duration;
 
 import de.dennisguse.opentracks.data.ContentProviderUtils;
 import de.dennisguse.opentracks.data.models.ActivityType;
@@ -47,61 +51,85 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         ContentProviderUtils contentProviderUtils = new ContentProviderUtils(this);
         Track track = contentProviderUtils.getTrack(trackId);
 
-        viewBinding.trackEditName.setText(track.getName());
+        SharedPreferences preferences = this.getSharedPreferences("default_time_unit", Context.MODE_PRIVATE);
+        int selectedTimeUnitId = preferences.getInt(getString(R.string.stats_time_units_key), R.string.stats_time_default);
+        int minTimeMillis = convertTimeUnitToMillis(selectedTimeUnitId);
 
-        viewBinding.trackEditActivityType.setText(track.getActivityTypeLocalized());
+        Duration movingTime = track.getTrackStatistics().getMovingTime();
+        long movingTimeMillis = movingTime.toMillis();
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, ActivityType.getLocalizedStrings(this));
-        viewBinding.trackEditActivityType.setAdapter(adapter);
-        viewBinding.trackEditActivityType.setOnItemClickListener((parent, view, position, id) -> {
-            String localizedActivityType = (String) viewBinding.trackEditActivityType.getAdapter().getItem(position);
-            setActivityTypeIcon(ActivityType.findByLocalizedString(this, localizedActivityType));
-        });
-        viewBinding.trackEditActivityType.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                String localizedActivityType = viewBinding.trackEditActivityType.getText().toString();
+        if (movingTimeMillis < minTimeMillis) {
+            ConfirmDeleteDialogFragment.showDialog(getSupportFragmentManager(), trackId);
+        } else {
+            viewBinding.trackEditName.setText(track.getName());
+            viewBinding.trackEditActivityType.setText(track.getActivityTypeLocalized());
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, ActivityType.getLocalizedStrings(this));
+            viewBinding.trackEditActivityType.setAdapter(adapter);
+            viewBinding.trackEditActivityType.setOnItemClickListener((parent, view, position, id) -> {
+                String localizedActivityType = (String) viewBinding.trackEditActivityType.getAdapter().getItem(position);
                 setActivityTypeIcon(ActivityType.findByLocalizedString(this, localizedActivityType));
+            });
+            viewBinding.trackEditActivityType.setOnFocusChangeListener((v, hasFocus) -> {
+                if (!hasFocus) {
+                    String localizedActivityType = viewBinding.trackEditActivityType.getText().toString();
+                    setActivityTypeIcon(ActivityType.findByLocalizedString(this, localizedActivityType));
+                }
+            });
+
+            setActivityTypeIcon(track.getActivityType());
+            viewBinding.trackEditActivityTypeIcon.setOnClickListener(v -> ChooseActivityTypeDialogFragment.showDialog(getSupportFragmentManager(), this, viewBinding.trackEditActivityType.getText().toString()));
+
+            viewBinding.trackEditDescription.setText(track.getDescription());
+
+            viewBinding.time.setText(StringUtils.formatElapsedTime(track.getTrackStatistics().getMovingTime()));
+
+            {
+                Pair<String, String> parts = SpeedFormatter.Builder()
+                        .setUnit(PreferencesUtils.getUnitSystem())
+                        .setReportSpeedOrPace(PreferencesUtils.isReportSpeed(track))
+                        .build(this)
+                        .getSpeedParts(track.getTrackStatistics().getAverageMovingSpeed());
+                viewBinding.speed.setText(parts.first);
+                viewBinding.speedUnit.setText(parts.second);
             }
-        });
 
-        setActivityTypeIcon(track.getActivityType());
-        viewBinding.trackEditActivityTypeIcon.setOnClickListener(v -> ChooseActivityTypeDialogFragment.showDialog(getSupportFragmentManager(), this, viewBinding.trackEditActivityType.getText().toString()));
+            {
+                Pair<String, String> parts = DistanceFormatter.Builder()
+                        .setUnit(PreferencesUtils.getUnitSystem())
+                        .build(this)
+                        .getDistanceParts(track.getTrackStatistics().getTotalDistance());
+                viewBinding.distance.setText(parts.first);
+                viewBinding.distanceUnit.setText(parts.second);
+            }
 
-        viewBinding.trackEditDescription.setText(track.getDescription());
+            viewBinding.finishButton.setOnClickListener(v -> {
+                storeTrackMetaData(contentProviderUtils, track);
+                ExportUtils.postWorkoutExport(this, trackId);
+                finish();
+            });
 
-        viewBinding.time.setText(StringUtils.formatElapsedTime(track.getTrackStatistics().getMovingTime()));
+            viewBinding.resumeButton.setOnClickListener(v -> {
+                storeTrackMetaData(contentProviderUtils, track);
+                resumeTrackAndFinish();
+            });
 
-        {
-            Pair<String, String> parts = SpeedFormatter.Builder()
-                    .setUnit(PreferencesUtils.getUnitSystem())
-                    .setReportSpeedOrPace(PreferencesUtils.isReportSpeed(track))
-                    .build(this)
-                    .getSpeedParts(track.getTrackStatistics().getAverageMovingSpeed());
-            viewBinding.speed.setText(parts.first);
-            viewBinding.speedUnit.setText(parts.second);
+            viewBinding.discardButton.setOnClickListener(v -> ConfirmDeleteDialogFragment.showDialog(getSupportFragmentManager(), trackId));
         }
+    }
 
-        {
-            Pair<String, String> parts = DistanceFormatter.Builder()
-                    .setUnit(PreferencesUtils.getUnitSystem())
-                    .build(this)
-                    .getDistanceParts(track.getTrackStatistics().getTotalDistance());
-            viewBinding.distance.setText(parts.first);
-            viewBinding.distanceUnit.setText(parts.second);
+    private int convertTimeUnitToMillis(int selectedTimeUnitId) {
+        int minTimeMillis;
+        if (selectedTimeUnitId == R.string.stats_time_unit_five) {
+            minTimeMillis = 5 * 1000; // 5 seconds
+        } else if (selectedTimeUnitId == R.string.stats_time_unit_ten) {
+            minTimeMillis = 10 * 1000; // 10 seconds
+        } else if (selectedTimeUnitId == R.string.stats_time_unit_twenty) {
+            minTimeMillis = 15 * 1000; // 15 seconds
+        } else {
+            minTimeMillis = 0; // Default or custom case
         }
-
-        viewBinding.finishButton.setOnClickListener(v -> {
-            storeTrackMetaData(contentProviderUtils, track);
-            ExportUtils.postWorkoutExport(this, trackId);
-            finish();
-        });
-
-        viewBinding.resumeButton.setOnClickListener(v -> {
-            storeTrackMetaData(contentProviderUtils, track);
-            resumeTrackAndFinish();
-        });
-
-        viewBinding.discardButton.setOnClickListener(v -> ConfirmDeleteDialogFragment.showDialog(getSupportFragmentManager(), trackId));
+        return minTimeMillis;
     }
 
     private void storeTrackMetaData(ContentProviderUtils contentProviderUtils, Track track) {

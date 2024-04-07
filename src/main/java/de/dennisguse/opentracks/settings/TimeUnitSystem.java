@@ -6,7 +6,7 @@ public enum TimeUnitSystem {
     FIVE_SEC(R.string.stats_time_unit_five),
 
     TEN_SEC(R.string.stats_time_unit_ten),
-    FIFTEEN_SEC(R.string.stats_time_unit_fifteen),
+    TWENTY_SEC(R.string.stats_time_unit_twenty),
 
     CUSTOM(R.string.stats_time_unit_custom); // Nautical miles with feet
 
