@@ -8,7 +8,7 @@ public enum TimeUnitSystem {
     TEN_SEC(R.string.stats_time_unit_ten),
     TWENTY_SEC(R.string.stats_time_unit_twenty),
 
-    CUSTOM(R.string.stats_time_unit_custom); // Nautical miles with feet
+    CUSTOM(R.string.stats_time_unit_custom);
 
     private final int preference;
 
@@ -22,6 +22,6 @@ public enum TimeUnitSystem {
 
     @Deprecated //TODO used to initialize before loading from preferences; should be loaded first
     public static TimeUnitSystem defaultUnitSystem() {
-        return FIVE_SEC;
+        return TEN_SEC;
     }
 }

@@ -22,6 +22,10 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         if (PreferencesUtils.isKey(R.string.stats_units_key, key)) {
             getActivity().runOnUiThread(this::updateUnits);
         }
+
+        if (PreferencesUtils.isKey(R.string.stats_time_units_key, key)) {
+            getActivity().runOnUiThread(this::updateTimeUnits);
+        }
     };
 
     @Override
@@ -47,6 +51,7 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
     public void onPause() {
         super.onPause();
         PreferencesUtils.unregisterOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
+
     }
 
     @Override
@@ -70,11 +75,11 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
     private void updateTimeUnits() {
         //Acquire time units from Preferences
         TimeUnitSystem time = PreferencesUtils.getTimeUnit();
-        SharedPreferences preferences = getContext().getSharedPreferences("default_time_unit", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-
-        editor.putInt(getString(R.string.stats_time_units_key), time.getPreferenceId());
-        editor.apply();
+//        SharedPreferences preferences = getContext().getSharedPreferences("default_time_unit", Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = preferences.edit();
+//
+//        editor.putInt(getString(R.string.stats_time_units_key), time.getPreferenceId());
+//        editor.apply();
 
         ListPreference statsTimePreferences = findPreference((getString(R.string.stats_time_units_key)));
 
