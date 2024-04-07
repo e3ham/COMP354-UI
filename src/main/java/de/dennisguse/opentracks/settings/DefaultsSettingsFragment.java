@@ -1,17 +1,27 @@
 package de.dennisguse.opentracks.settings;
 
+import static androidx.preference.PreferenceDialogFragmentCompat.*;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import android.content.Context;
+import android.text.InputType;
+import android.widget.EditText;
+
+import androidx.preference.PreferenceDialogFragmentCompat;
 import androidx.preference.PreferenceFragmentCompat;
 
 import de.dennisguse.opentracks.R;
 import de.dennisguse.opentracks.data.models.ActivityType;
 import de.dennisguse.opentracks.fragments.ChooseActivityTypeDialogFragment;
+import de.dennisguse.opentracks.settings.bluetooth.BluetoothLeSensorPreference;
 
 public class DefaultsSettingsFragment extends PreferenceFragmentCompat implements ChooseActivityTypeDialogFragment.ChooseActivityTypeCaller {
 
@@ -27,9 +37,29 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         }
     };
 
+
+    private String custom_time; //use for CUSTOM
+
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.settings_defaults);
+
+        ListPreference statsTimeUnitsPreference = findPreference(getString(R.string.stats_time_units_key));
+
+        // Set up the listener
+        statsTimeUnitsPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
+                if (newValue.equals("CUSTOM")) {
+                    displayCustomInputDialog();
+                    // Preventthe default behavior of the ListPreference
+                    return false;
+                } else {
+                    //Allow the ListPreference to handle the change
+                    return true;
+                }
+            }
+        });
     }
 
     @Override
@@ -115,5 +145,30 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         if (activityPreferenceDialog != null) {
             activityPreferenceDialog.updateUI(activityType);
         }
+    }
+
+
+
+
+    //Custom Dialog
+    protected void displayCustomInputDialog() {
+        // Show dialog box for custom input
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Custom Time Unit");
+
+        // Set the edit text box for user to enter
+        final EditText cus_Input = new EditText(requireContext());
+        //cus_Input.setInputType(InputType.TYPE_CLASS_NUMBER); //make sure it's a number
+
+        builder.setView(cus_Input);
+
+        //Buttons cancel or just say ok
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            custom_time = cus_Input.getText().toString();
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        //show final result
+        builder.show();
     }
 }

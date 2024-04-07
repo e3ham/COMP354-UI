@@ -28,11 +28,11 @@
             android:title="@string/settings_stats_time_unit"
             app:useSimpleSummaryProvider="true" />
         <!-- Add a text box for user to select any custom time -->
-        <EditTextPreference
-            android:key="@string/stats_time_units_custom_key"
-            android:title="@string/settings_stats_time_unit_custom"
-            android:inputType="number"
-            android:defaultValue="0" />
+<!--        <EditTextPreference-->
+<!--            android:key="@string/stats_time_units_custom_key"-->
+<!--            android:title="@string/settings_stats_time_unit_custom"-->
+<!--            android:inputType="number"-->
+<!--            android:defaultValue="0" />-->
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_activity_defaults_category">
