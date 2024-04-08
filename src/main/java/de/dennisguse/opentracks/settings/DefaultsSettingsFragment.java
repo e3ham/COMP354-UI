@@ -56,12 +56,11 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
             public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
                 if (newValue.equals("CUSTOM")) {
                     displayCustomInputDialog();
-                    // Prevent the default behavior of the ListPreference
-                    return false;
-                } else {
-                    //Allow the ListPreference to handle the change
-                    return true;
+                    // Update the displayed value of the ListPreference
+                    ((ListPreference) preference).setValue(newValue.toString());
                 }
+                // Allow the ListPreference to handle the change
+                return true;
             }
         });
     }
