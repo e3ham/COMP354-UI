@@ -45,10 +45,6 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
     public ListPreference statsTimePreferences;
     public DefaultsSettingsFragment dfs;
 
-    private String getCustomTime() {
-        return PreferenceManager.getDefaultSharedPreferences(this)
-                .getString("custom_time_unit", null);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,7 +106,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
             TimeUnitSystem timeUnitSystem = PreferencesUtils.getTimeUnit();
             Log.i("timeUnitSystem", timeUnitSystem.toString());
 
-            String customTime = getCustomTime();
+            String customTime = DefaultsSettingsFragment.getCustomTime(this);
             System.out.println("CustomTime value: " + customTime);
             if (customTime != null) {
                 System.out.println("Custom time valid");

@@ -185,4 +185,10 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         custom_time = value;
         System.out.println("Custom Time set to: " + value);
     }
+
+    public static String getCustomTime(Context context) {
+        System.out.println("getCustomTime called in DefaultsSettingsFragment");
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getString("custom_time_unit", null);
+    }
 }
