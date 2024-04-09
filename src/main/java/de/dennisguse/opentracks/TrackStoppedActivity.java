@@ -28,6 +28,7 @@ import de.dennisguse.opentracks.util.ExportUtils;
 import de.dennisguse.opentracks.util.IntentUtils;
 import de.dennisguse.opentracks.util.StringUtils;
 import de.dennisguse.opentracks.util.TrackUtils;
+import androidx.preference.PreferenceManager;
 
 public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements ChooseActivityTypeDialogFragment.ChooseActivityTypeCaller {
 
@@ -43,6 +44,11 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
 
     public ListPreference statsTimePreferences;
     public DefaultsSettingsFragment dfs;
+
+    private String getCustomTime() {
+        return PreferenceManager.getDefaultSharedPreferences(this)
+                .getString("custom_time_unit", null);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,14 +107,17 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         }
 
         viewBinding.finishButton.setOnClickListener(v -> {
-            String time_setting = getString(R.string.stats_time_units_key);
             TimeUnitSystem timeUnitSystem = PreferencesUtils.getTimeUnit();
-            Log.i(timeUnitSystem.toString(), timeUnitSystem.toString());
-            if (time_setting.equals("CUSTOM")) {
-                Log.i(dfs.custom_time, dfs.custom_time);
-                int time_key = Integer.parseInt(dfs.custom_time);
+            Log.i("timeUnitSystem", timeUnitSystem.toString());
+
+            String customTime = getCustomTime();
+            System.out.println("CustomTime value: " + customTime);
+            if (customTime != null) {
+                System.out.println("Custom time valid");
+                int time_key = Integer.parseInt(customTime);
                 long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
                 if(totalTimeSeconds < time_key) {
+                    System.out.println("Track deleted");
                     onConfirmDeleteDone(trackId);
                 }
             } else {

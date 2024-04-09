@@ -182,5 +182,7 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
     private void saveCustomTimeUnit(String value) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(requireContext());
         sharedPref.edit().putString("custom_time_unit", value).apply();
+        custom_time = value;
+        System.out.println("Custom Time set to: " + value);
     }
 }
