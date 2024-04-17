@@ -76,6 +76,8 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
 
     private RecordingStatus recordingStatus = TrackRecordingService.STATUS_DEFAULT;
 
+    public Track track;
+
     private final TrackRecordingServiceConnection.Callback bindChangedCallback = (service, unused) -> {
         service.getRecordingStatusObservable()
                 .observe(TrackRecordingActivity.this, this::onRecordingStatusChanged);
@@ -142,6 +144,14 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
         viewBinding.trackRecordingFabAction.setOnClickListener((view) -> {
             ActivityUtils.vibrate(this, 200);
             trackRecordingServiceConnection.stopRecording(TrackRecordingActivity.this);
+            String time_setting = getString(R.string.stats_time_units_key);
+            String[] parts = time_setting.split("\\s+");
+            String firstPart = parts[0];
+//            int time_key = Integer.parseInt(firstPart);
+//            long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
+//            if(totalTimeSeconds < time_key) {
+//                Log.i("HELLO", "HELLO");
+//            }
             Intent newIntent = IntentUtils.newIntent(TrackRecordingActivity.this, TrackStoppedActivity.class)
                     .putExtra(TrackStoppedActivity.EXTRA_TRACK_ID, trackId);
             startActivity(newIntent);

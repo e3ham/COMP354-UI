@@ -6,6 +6,9 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
+
+import androidx.preference.ListPreference;
 
 import de.dennisguse.opentracks.data.ContentProviderUtils;
 import de.dennisguse.opentracks.data.models.ActivityType;
@@ -14,13 +17,18 @@ import de.dennisguse.opentracks.data.models.SpeedFormatter;
 import de.dennisguse.opentracks.data.models.Track;
 import de.dennisguse.opentracks.databinding.TrackStoppedBinding;
 import de.dennisguse.opentracks.fragments.ChooseActivityTypeDialogFragment;
+import de.dennisguse.opentracks.services.TrackDeleteService;
 import de.dennisguse.opentracks.services.TrackRecordingServiceConnection;
+import de.dennisguse.opentracks.settings.DefaultsSettingsFragment;
 import de.dennisguse.opentracks.settings.PreferencesUtils;
+import de.dennisguse.opentracks.settings.TimeUnitSystem;
+import de.dennisguse.opentracks.stats.TrackStatistics;
 import de.dennisguse.opentracks.ui.aggregatedStatistics.ConfirmDeleteDialogFragment;
 import de.dennisguse.opentracks.util.ExportUtils;
 import de.dennisguse.opentracks.util.IntentUtils;
 import de.dennisguse.opentracks.util.StringUtils;
 import de.dennisguse.opentracks.util.TrackUtils;
+import androidx.preference.PreferenceManager;
 
 public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements ChooseActivityTypeDialogFragment.ChooseActivityTypeCaller {
 
@@ -33,6 +41,10 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
     private Track.Id trackId;
 
     private boolean isDiscarding = false;
+
+    public ListPreference statsTimePreferences;
+    public DefaultsSettingsFragment dfs;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +103,27 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         }
 
         viewBinding.finishButton.setOnClickListener(v -> {
+            TimeUnitSystem timeUnitSystem = PreferencesUtils.getTimeUnit();
+            Log.i("timeUnitSystem", timeUnitSystem.toString());
+
+            String customTime = DefaultsSettingsFragment.getCustomTime(this);
+            System.out.println("CustomTime value: " + customTime);
+            if (customTime != null) {
+                System.out.println("Custom time valid");
+                int time_key = Integer.parseInt(customTime);
+                long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
+                if(totalTimeSeconds < time_key) {
+                    System.out.println("Track deleted");
+                    onConfirmDeleteDone(trackId);
+                }
+            } else {
+                String[] parts = timeUnitSystem.toString().split("_");
+                int time_key = convertInt(parts[0]);
+                long totalTimeSeconds = track.getTrackStatistics().getTotalTime().getSeconds();
+                if (totalTimeSeconds < time_key) {
+                    onConfirmDeleteDone(trackId);
+                }
+            }
             storeTrackMetaData(contentProviderUtils, track);
             ExportUtils.postWorkoutExport(this, trackId);
             finish();
@@ -108,6 +141,18 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         TrackUtils.updateTrack(TrackStoppedActivity.this, track, viewBinding.trackEditName.getText().toString(),
                 viewBinding.trackEditActivityType.getText().toString(), viewBinding.trackEditDescription.getText().toString(),
                 contentProviderUtils);
+    }
+
+    public int convertInt(String s) {
+        int val = 0;
+        if (s.equals("FIVE")) {
+            val = 5;
+        } else if (s.equals("TEN")) {
+            val = 10;
+        } else if (s.equals("TWENTY")) {
+            val = 20;
+        }
+        return val;
     }
 
     @Override

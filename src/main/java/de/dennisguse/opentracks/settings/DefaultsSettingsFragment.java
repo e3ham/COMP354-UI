@@ -1,16 +1,28 @@
 package de.dennisguse.opentracks.settings;
 
+import static androidx.preference.PreferenceDialogFragmentCompat.*;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
+import android.content.Context;
+import android.text.InputType;
+import android.widget.EditText;
+
+import androidx.preference.PreferenceDialogFragmentCompat;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 
 import de.dennisguse.opentracks.R;
 import de.dennisguse.opentracks.data.models.ActivityType;
 import de.dennisguse.opentracks.fragments.ChooseActivityTypeDialogFragment;
+import de.dennisguse.opentracks.settings.bluetooth.BluetoothLeSensorPreference;
 
 public class DefaultsSettingsFragment extends PreferenceFragmentCompat implements ChooseActivityTypeDialogFragment.ChooseActivityTypeCaller {
 
@@ -21,11 +33,36 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         if (PreferencesUtils.isKey(R.string.stats_units_key, key)) {
             getActivity().runOnUiThread(this::updateUnits);
         }
+        if (PreferencesUtils.isKey(R.string.stats_time_units_key, key)) {
+            getActivity().runOnUiThread(this::updateTimeUnits);
+        }
     };
+
+
+    public String custom_time;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.settings_defaults);
+
+        ListPreference statsTimeUnitsPreference = findPreference(getString(R.string.stats_time_units_key));
+
+        custom_time = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString("custom_time_unit", null);
+
+        // Set up the listener
+        statsTimeUnitsPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
+                if (newValue.equals("CUSTOM")) {
+                    displayCustomInputDialog();
+                    // Update the displayed value of the ListPreference
+                    ((ListPreference) preference).setValue(newValue.toString());
+                }
+                // Allow the ListPreference to handle the change
+                return true;
+            }
+        });
     }
 
     @Override
@@ -38,6 +75,7 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
     public void onResume() {
         super.onResume();
         PreferencesUtils.registerOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
+        updateTimeUnits(); //Make sure that time is kept
         updateUnits();
     }
 
@@ -64,6 +102,28 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         super.onDisplayPreferenceDialog(preference);
     }
 
+    //Modify the default time units for activities
+    private void updateTimeUnits() {
+        //Acquire time units from Preferences
+        TimeUnitSystem time = PreferencesUtils.getTimeUnit();
+        SharedPreferences preferences = getContext().getSharedPreferences("default_time_unit", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putInt(getString(R.string.stats_time_units_key), time.getPreferenceId());
+        editor.apply();
+
+        ListPreference statsTimePreferences = findPreference((getString(R.string.stats_time_units_key)));
+
+        int entriesID = switch (time) {
+            case FIVE_SEC, TEN_SEC, TWENTY_SEC, CUSTOM -> R.array.stats_time_units_options;
+        };
+
+        String[] entries = getResources().getStringArray(entriesID);
+        statsTimePreferences.setEntries(entries);
+
+        HackUtils.invalidatePreference(statsTimePreferences);
+    }
+
     private void updateUnits() {
         UnitSystem unitSystem = PreferencesUtils.getUnitSystem();
 
@@ -88,5 +148,47 @@ public class DefaultsSettingsFragment extends PreferenceFragmentCompat implement
         if (activityPreferenceDialog != null) {
             activityPreferenceDialog.updateUI(activityType);
         }
+    }
+
+
+    //Custom Dialog
+    protected void displayCustomInputDialog() {
+        // Show dialog box for custom input
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Custom Time Unit");
+
+        // Set the edit text box for user to enter
+        final EditText cus_Input = new EditText(requireContext());
+        //cus_Input.setInputType(InputType.TYPE_CLASS_NUMBER); //make sure it's a number
+
+        builder.setView(cus_Input);
+
+        //Buttons cancel or just say ok
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            // Store the custom value
+            custom_time = cus_Input.getText().toString();
+            saveCustomTimeUnit(custom_time); // Call the method to persist the value
+        });
+
+        if (custom_time != null) {
+            cus_Input.setText(custom_time);
+        }
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        //show final result
+        builder.show();
+    }
+
+    private void saveCustomTimeUnit(String value) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        sharedPref.edit().putString("custom_time_unit", value).apply();
+        custom_time = value;
+        System.out.println("Custom Time set to: " + value);
+    }
+
+    public static String getCustomTime(Context context) {
+        System.out.println("getCustomTime called in DefaultsSettingsFragment");
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getString("custom_time_unit", null);
     }
 }
